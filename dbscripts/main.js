@@ -1,17 +1,29 @@
+var s = db.system.js;
+s.remove({});
 
 //Used for registering primary key per collection
-db.system.js.save( { 
+s.save( { 
 	_id : "vdbRegisterPrimaryKey",
 	value : function(branch, collection, key){ 
-		return db["vdbPrimaryKeys"].insert({
-			collectionIdentifier: collection+"_vdb_"+branch,
-			primaryKey: key
-		});
+		return db["vdbPrimaryKeys"].update( { collectionIdentifier: collection+"_vdb_"+branch },
+			{
+				collectionIdentifier: collection+"_vdb_"+branch,
+				primaryKey: key
+			}, true ); //true for upsert
+	}
+});
+
+//Used for looking up the primary key per collection
+s.save( { 
+	_id : "vdbLookupPrimaryKey",
+	value : function(branch, collection){ 
+		var result = db["vdbPrimaryKeys"].findOne({collectionIdentifier: collection+"_vdb_"+branch});
+		return result ? result.primaryKey : null;
 	}
 });
 
 //Used for Inserting a document into a versioned collection
-db.system.js.save( { 
+s.save( { 
 	_id : "vdbInsert",
 	value : function(branch, collection, data){ 
 		data["__vdbtimestamp"] = new Date();
@@ -21,7 +33,7 @@ db.system.js.save( {
 });
 
 //Used for Querying one item from a collection
-db.system.js.save( { 
+s.save( { 
 	_id : "vdbFindOneFromHead",
 	value : function(branch, collection, value){
 		var primarykey = db.vdbPrimaryKeys.findOne({collectionIdentifier: collection+"_vdb_"+branch}).key;
