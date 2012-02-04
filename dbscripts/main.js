@@ -1,6 +1,10 @@
 var s = db.system.js;
 s.remove({});
 
+
+///////////////////////////////////////////////////
+//                  PRIMARY KEYS                 //
+///////////////////////////////////////////////////
 //Used for registering primary key per collection
 s.save( { 
 	_id : "vdbRegisterPrimaryKey",
@@ -22,6 +26,19 @@ s.save( {
 	}
 });
 
+
+//Used for clearing all primary keys
+s.save( { 
+	_id : "vdbClearAllPrimaryKeys",
+	value : function(){
+		return db.vdbPrimaryKeys.remove({});
+	}
+});
+
+
+///////////////////////////////////////////////////
+//                     INSERTS                   //
+///////////////////////////////////////////////////
 //Used for Inserting a document into a versioned collection
 s.save( { 
 	_id : "vdbInsert",
