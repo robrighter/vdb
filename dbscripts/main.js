@@ -39,24 +39,29 @@ s.save( {
 ///////////////////////////////////////////////////
 //                     INSERTS                   //
 ///////////////////////////////////////////////////
+
+
 //Used for Inserting a document into a versioned collection
 s.save( { 
 	_id : "vdbInsert",
-	value : function(branch, collection, data){ 
+	value : function(branch, collection, data){
+		var mongocollection = collection+"_vdb_"+branch;  
 		data["__vdbtimestamp"] = new Date();
-		db[collection+"_vdb_"+branch].insert(data);
-		return data;
+		var result = db[mongocollection].insert(data);
+		return result._id;
 	}
 });
 
 //Used for Querying one item from a collection
 s.save( { 
-	_id : "vdbFindOneFromHead",
-	value : function(branch, collection, value){
-		var primarykey = db.vdbPrimaryKeys.findOne({collectionIdentifier: collection+"_vdb_"+branch}).key;
+	_id : "vdbHeadDocForKey",
+	value : function(branch, collection, key){
+		var primarykey = db.eval("vdbLookupPrimaryKey('"+branch+"','"+collection+"')");
+		if(primarykey == null){
+			return null;
+		}
 		var query = {};
-		query[primarykey] = value;
-		//TODO MAKE THIS WORK => query['orderby'] = 
-		return db[collection+"_vdb_"+branch].findOne(query);
+		query[primarykey] = key;
+		return db[collection+"_vdb_"+branch].find(query).sort({"__vdbtimestamp": -1}).limit(1);
 	}
 });
