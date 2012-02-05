@@ -45,10 +45,13 @@ s.save( {
 s.save( { 
 	_id : "vdbInsert",
 	value : function(branch, collection, data){
-		var mongocollection = collection+"_vdb_"+branch;  
-		data["__vdbtimestamp"] = new Date();
-		var result = db[mongocollection].insert(data);
-		return result._id;
+		var mongocollection = collection+"_vdb_"+branch;
+		var toinsert = { __vdbtimestamp : new Timestamp(), _id: new ObjectId() };
+		for(key in data){
+			toinsert[key] = data[key];
+		}  
+		var result = db[mongocollection].insert(toinsert);
+		return toinsert._id;
 	}
 });
 
@@ -62,6 +65,6 @@ s.save( {
 		}
 		var query = {};
 		query[primarykey] = key;
-		return db[collection+"_vdb_"+branch].find(query).sort({"__vdbtimestamp": -1}).limit(1);
+		return db[collection+"_vdb_"+branch].find(query).sort({"__vdbtimestamp": -1}).limit(1)[0];
 	}
 });
