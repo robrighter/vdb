@@ -1,7 +1,6 @@
 var s = db.system.js;
 s.remove({});
 
-
 ///////////////////////////////////////////////////
 //                  PRIMARY KEYS                 //
 ///////////////////////////////////////////////////
@@ -46,7 +45,7 @@ s.save( {
 	_id : "vdbInsert",
 	value : function(branch, collection, data){
 		var mongocollection = collection+"_vdb_"+branch;
-		var toinsert = { __vdbtimestamp : new Timestamp(), _id: new ObjectId() };
+		var toinsert = { __vdbtimestamp : new Timestamp(), _id: new ObjectId()  };
 		for(key in data){
 			toinsert[key] = data[key];
 		}  
@@ -54,6 +53,20 @@ s.save( {
 		return toinsert._id;
 	}
 });
+
+//Used for Inserting a document into a versioned collection
+s.save( { 
+	_id : "vdbDelete",
+	value : function(branch, collection, key){
+		var mongocollection = collection+"_vdb_"+branch;
+		var primarykey = db.eval("vdbLookupPrimaryKey('"+branch+"','"+collection+"')");
+		var toinsert = { __vdbtimestamp : new Timestamp(), _id: new ObjectId(), __vdbdelete: true };
+		toinsert[primarykey] = key;
+		var result = db[mongocollection].insert(toinsert);
+		return toinsert._id;
+	}
+});
+
 
 //Used for Querying one item from a collection
 s.save( { 
@@ -65,6 +78,12 @@ s.save( {
 		}
 		var query = {};
 		query[primarykey] = key;
-		return db[collection+"_vdb_"+branch].find(query).sort({"__vdbtimestamp": -1}).limit(1)[0];
+		var result = db[collection+"_vdb_"+branch].find(query).sort({"__vdbtimestamp": -1}).limit(1)[0];
+		if(result && result.hasOwnProperty('__vdbdelete')){
+			return null;
+		}
+		else{
+			return result;
+		}
 	}
 });

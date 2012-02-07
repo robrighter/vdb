@@ -80,3 +80,13 @@ delete result['_id'];
 delete result['__vdbtimestamp'];
 assert.eq(result, data3, "Variable collection name failed on second insert.");
 
+//Clear out the test info
+//remove all objects in b1-c1
+db["c1_vdb_b1"].remove({});
+//remove all objects in b2-c1
+db["c1_vdb_b2"].remove({});
+//remove all objects in b1-c2
+db["c2_vdb_b1"].remove({});
+//remove all objects in b2-c2
+db["c2_vdb_b2"].remove({});
+

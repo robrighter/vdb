@@ -26,6 +26,13 @@ else
 fi
 tput sgr0 # Reset colors to "normal."
 
+if mongo localhost:$PORT/test --quiet ./delete.js; then
+	echo $GREEN"Passed: Delete Tests"
+else
+	echo $RED"Failed: Delete Tests"
+fi
+tput sgr0 # Reset colors to "normal."
+
 if mongo localhost:$PORT/test --quiet ./merge.js; then
 	echo $GREEN"Passed: Merge Tests"
 else
