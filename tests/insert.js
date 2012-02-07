@@ -8,6 +8,9 @@ db["c1_vdb_b1"].remove({});
 db["c1_vdb_b2"].remove({});
 //remove all objects in b1-c2
 db["c2_vdb_b1"].remove({});
+//remove all objects in b2-c2
+db["c2_vdb_b2"].remove({});
+
 
 //verify everything is empty
 assert.eq(db["c1_vdb_b1"].find().count(), 0, 'Test Collection and branch could not be emptied');
@@ -16,6 +19,9 @@ assert.eq(db["c2_vdb_b1"].find().count(), 0, 'Test Collection and branch could n
 
 //register primary key 'key' for tests
 db.eval("vdbRegisterPrimaryKey('b1','c1','key')");
+db.eval("vdbRegisterPrimaryKey('b2','c1','key')");
+db.eval("vdbRegisterPrimaryKey('b1','c2','key')");
+db.eval("vdbRegisterPrimaryKey('b2','c2','key')");
 
 //insert data1 into b1-c1 on k1
 db.eval("vdbInsert('b1','c1',"+tojson(data1)+")");
@@ -57,3 +63,20 @@ result = db.eval("vdbHeadDocForKey('b1','c1','anotherkey')");
 delete result['_id'];
 delete result['__vdbtimestamp'];
 assert.eq(result, data3, "Most recent data not queriable after unrelated insert");
+
+//insert data2 into b1-c2 on k1
+db.eval("vdbInsert('b1','c2',"+tojson(data2)+")");
+db.eval("vdbInsert('b1','c2',"+tojson(data3)+")");
+
+//query head from b1-c1-k1 and verify that it matches data2
+result = db.eval("vdbHeadDocForKey('b1','c2','mykey')");
+delete result['_id'];
+delete result['__vdbtimestamp'];
+assert.eq(result, data2, "Variable collection name failed on insert.");
+
+//query head from b1-c1-k1 and verify that it matches data2
+result = db.eval("vdbHeadDocForKey('b1','c2','anotherkey')");
+delete result['_id'];
+delete result['__vdbtimestamp'];
+assert.eq(result, data3, "Variable collection name failed on second insert.");
+
